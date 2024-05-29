@@ -265,3 +265,197 @@ void handleMessage(Adafruit_MQTT_Subscribe *subscription) {
   }
 }
 
+
+
+#hvac3.ino
+
+HVAC Control System with ESP32 and Bluetooth
+This project demonstrates how to control an HVAC system (comprised of a compressor and a fan) using an ESP32 with Bluetooth functionality. The system reads temperature data from a sensor and displays it on an LCD screen. It also allows control commands to be sent via a Bluetooth terminal app on an Android device. The temperature data is sent to the Bluetooth terminal app every second.
+
+Components Used
+ESP32
+DS18B20 Temperature Sensor
+16x2 I2C LCD
+Relay modules for compressor and fan
+Bluetooth Serial Terminal app (available on Android)
+Features
+Displays the company name and project title on the LCD at startup.
+Reads and displays the temperature from a DS18B20 sensor.
+Controls the compressor and fan based on the temperature.
+Allows manual control of the compressor and fan via Bluetooth commands.
+Sends the current temperature to the Bluetooth terminal app every second.
+Code Explanation
+Libraries Included
+Wire.h: I2C communication
+OneWire.h: Communication with the DS18B20 temperature sensor
+LiquidCrystal_I2C.h: Control the I2C LCD
+DallasTemperature.h: Interface with the DS18B20 temperature sensor
+BluetoothSerial.h: Enable Bluetooth functionality on the ESP32
+Pin Definitions
+ONE_WIRE_BUS: GPIO 19, data pin for the DS18B20 sensor
+COMPRESSOR_PIN: GPIO 16, control pin for the compressor
+FAN_PIN: GPIO 17, control pin for the fan
+MIN_TEMPERATURE: 10°C, threshold to turn on the compressor
+MAX_TEMPERATURE: 12°C, threshold to turn off the compressor
+Custom Characters
+A custom degree symbol is created for display on the LCD.
+
+Setup Function
+Initialize pins for compressor and fan control.
+Begin communication with the temperature sensor, LCD, and Serial/Bluetooth.
+Display the company name and project title on the LCD, each for 3 seconds.
+Main Loop
+Temperature Reading: Request and read the temperature from the DS18B20 sensor.
+LCD Display: Display the current coil temperature on the LCD.
+Compressor and Fan Control:
+Turn off the compressor if the temperature is below or equal to the minimum temperature.
+Turn on the compressor if the temperature is above the maximum temperature.
+Bluetooth Command Handling:
+Handle commands to turn the compressor and fan on or off.
+Display "HVAC BLUETOOTH CONTROL" for 4 seconds if the command "ESP3" is received.
+Temperature Data Transmission: Send the current temperature to the Bluetooth terminal app every second.
+Code
+
+#include <Wire.h>
+#include <OneWire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DallasTemperature.h>
+#include <BluetoothSerial.h>
+
+#define ONE_WIRE_BUS 19 // Temp sensor
+#define COMPRESSOR_PIN 16
+#define FAN_PIN 17
+#define MIN_TEMPERATURE 10 // Minimum temperature set
+#define MAX_TEMPERATURE 12 // Maximum temperature set
+
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+BluetoothSerial SerialBT;
+
+// Custom character for degree symbol
+byte degreeSymbol[8] = {
+  0b00111,
+  0b00101,
+  0b00111,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000
+};
+
+unsigned long previousMillis = 0;
+const long interval = 1000; // Interval to send temperature data (1 second)
+
+void setup() {
+  pinMode(COMPRESSOR_PIN, OUTPUT);
+  pinMode(FAN_PIN, OUTPUT);
+
+  sensors.begin();
+  lcd.init();
+  lcd.backlight();
+
+  // Create custom degree symbol
+  lcd.createChar(0, degreeSymbol);
+
+  Serial.begin(115200);
+  SerialBT.begin("ESP32_HVAC"); // Bluetooth device name
+  while (!Serial);
+
+  // Display company name
+  lcd.setCursor(0, 0);
+  lcd.print("Hills ELECTRONICS");
+  lcd.setCursor(0, 1);
+  lcd.print("S LTD");
+  delay(3000); // Wait for 3 seconds
+
+  // Clear the display and show the next message
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("HVAC Trainer kit");
+  delay(3000); // Wait for another 3 seconds
+
+  // Clear the display before starting the loop
+  lcd.clear();
+}
+
+void loop() {
+  sensors.requestTemperatures();
+  float tempC = sensors.getTempCByIndex(0);
+
+  lcd.setCursor(0, 0);
+  lcd.print("COIL Temp:");
+  lcd.setCursor(10, 0);
+  lcd.print(tempC, 1);
+  lcd.write(byte(0));  // Display the custom degree symbol
+  lcd.print("C");
+
+  if (tempC <= MIN_TEMPERATURE) {
+    digitalWrite(COMPRESSOR_PIN, LOW);
+    digitalWrite(FAN_PIN, HIGH);
+    lcd.setCursor(0, 1); // Set cursor to the beginning of the second line
+    lcd.print("Compressor: OFF ");
+  } else {
+    digitalWrite(COMPRESSOR_PIN, HIGH);
+    digitalWrite(FAN_PIN, HIGH);
+    lcd.setCursor(0, 1); // Set cursor to the beginning of the second line
+    lcd.print("Compressor: ON");
+  }
+
+  // Handle Bluetooth commands
+  if (SerialBT.available()) {
+    String command = SerialBT.readStringUntil('\n');
+    command.trim();
+    if (command == "COMPRESSOR_ON") {
+      digitalWrite(COMPRESSOR_PIN, HIGH);
+      lcd.setCursor(0, 1);
+      lcd.print("Compressor: ON ");
+    } else if (command == "COMPRESSOR_OFF") {
+      digitalWrite(COMPRESSOR_PIN, LOW);
+      lcd.setCursor(0, 1);
+      lcd.print("Compressor: OFF");
+    } else if (command == "FAN_ON") {
+      digitalWrite(FAN_PIN, HIGH);
+    } else if (command == "FAN_OFF") {
+      digitalWrite(FAN_PIN, LOW);
+    } else if (command == "ESP3") {
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("HVAC BLUETOOTH");
+      lcd.setCursor(0, 1);
+      lcd.print("CONTROL");
+      delay(4000); // Wait for 4 seconds
+      lcd.clear();
+    }
+  }
+
+  // Send temperature data every second
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    SerialBT.print("Temperature: ");
+    SerialBT.print(tempC);
+    SerialBT.println("C");
+  }
+
+  delay(100); // Short delay to avoid overwhelming the loop
+}
+
+
+
+#Usage Instructions
+Connect the hardware components as specified in the code.
+Upload the code to the ESP32 using the Arduino IDE.
+Open the Serial Bluetooth Terminal app on your Android device and connect to "ESP32_HVAC".
+Use the following commands in the app to control the HVAC system:
+COMPRESSOR_ON: Turns on the compressor
+COMPRESSOR_OFF: Turns off the compressor
+FAN_ON: Turns on the fan
+FAN_OFF: Turns off the fan
+ESP3: Displays "HVAC BLUETOOTH CONTROL" on the LCD for 4 seconds
+The temperature data will be sent to the app every second.
+
+
+
+

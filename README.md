@@ -3,7 +3,10 @@ hvac1.ino is a code for HVAC trainer kit developed for TVET with no communicatio
 
 # Temperature-Controlled Fan and Compressor System
 
-This project controls a fan and a compressor based on the temperature sensed by a temperature sensor. The system uses an LCD to display the current temperature and activates the fan and compressor accordingly.
+This project controls a fan and a compressor based
+on the temperature sensed by a temperature sensor. 
+The system uses an LCD to display the current temperature 
+and activates the fan and compressor accordingly.
 
 ## Components
 
@@ -34,7 +37,9 @@ This project controls a fan and a compressor based on the temperature sensed by 
 
 ## Code
 
-This code reads the temperature from the sensor and controls the fan and compressor based on predefined temperature thresholds. The current temperature is displayed on an LCD.
+This code reads the temperature from the sensor and controls the
+fan and compressor based on predefined temperature thresholds.
+The current temperature is displayed on an LCD.
 
 ```cpp
 #include <Wire.h>
@@ -93,9 +98,26 @@ hvac2.ino added wifi and adafruit MQTT procol
 
 ### Overall Code Explanation
 
-This project is designed to control an HVAC trainer kit, consisting of a fan and a compressor, based on temperature readings from a DS18B20 temperature sensor. The system displays the current temperature on an LCD and uses a predefined temperature threshold to control the fan and compressor. If the temperature falls below the minimum threshold, the compressor is turned off and the fan is turned on. If the temperature exceeds this threshold, both the fan and the compressor are turned on. Additionally, the project integrates with Adafruit IO, an IoT cloud platform, to enable remote monitoring and control. This integration is achieved through WiFi and MQTT protocols, allowing the system to publish temperature readings and subscribe to control feeds for the fan and compressor.
+This project is designed to control an HVAC trainer kit, consisting of a fan and a compressor,
+ based on temperature readings from a DS18B20 temperature sensor. The system displays
+ the current temperature on an LCD and uses a predefined temperature threshold to control
+the fan and compressor. If the temperature falls below the minimum threshold, the compressor
+is turned off and the fan is turned on. If the temperature exceeds this threshold, both the
+fan and the compressor are turned on. Additionally, the project integrates with Adafruit IO,
+ an IoT cloud platform, to enable remote monitoring and control. This integration is achieved
+through WiFi and MQTT protocols, allowing the system to publish temperature readings and
+ subscribe to control feeds for the fan and compressor.
 
-The code initializes the necessary hardware components, including the temperature sensor, LCD, fan, and compressor. It then connects to a WiFi network and attempts to connect to the Adafruit MQTT broker, logging the connection status to both the serial monitor and the LCD. The main loop of the program continuously reads the temperature, updates the LCD display, and controls the fan and compressor based on the temperature reading. It also publishes the temperature data to the Adafruit IO platform every 2 seconds and processes incoming MQTT messages to allow remote control of the fan and compressor via Adafruit IO feeds. This setup ensures real-time monitoring and control of the HVAC system both locally and remotely through the IoT platform.
+The code initializes the necessary hardware components, including the temperature sensor, LCD, fan, and compressor.
+ It then connects to a WiFi network and attempts to connect to the Adafruit MQTT broker,
+logging the connection status to both the serial monitor and the LCD. The main loop
+ of the program continuously reads the temperature, updates the LCD display,
+ and controls the fan and compressor based on the temperature reading.
+It also publishes the temperature data to the Adafruit IO platform
+ every 2 seconds and processes incoming MQTT messages to allow remote
+ control of the fan and compressor via Adafruit IO feeds.
+This setup ensures real-time monitoring and control of the HVAC
+ system both locally and remotely through the IoT platform.
 
 
 

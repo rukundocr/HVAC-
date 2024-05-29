@@ -19,8 +19,8 @@
 // Adafruit IO credentials
 #define AIO_SERVER "io.adafruit.com"
 #define AIO_SERVERPORT 1883
-#define AIO_USERNAME ""
-#define AIO_KEY ""
+#define AIO_USERNAME "" //add your adafruit username
+#define AIO_KEY "" // add your adafruit API Key 
 
 // Custom character for degree symbol
 byte degreeSymbol[8] = {

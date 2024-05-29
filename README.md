@@ -7,12 +7,11 @@ This project controls a fan and a compressor based on the temperature sensed by 
 
 ## Components
 
-- Arduino board
+- ESP32 DEVKIT V1 board
 - Temperature sensor (e.g., DS18B20)
-- LCD (I2C)
-- Fan
+- LCD 16x2  (I2C)
+- Fan 220V 
 - Compressor
-- Resistors, wires, and a breadboard
 
 ## Wiring
 

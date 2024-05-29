@@ -1,11 +1,3 @@
-//HVAC2.ino file code 
-//1.Add 3 feeds to control the fan, compressor, and temperature.
-//2.Add options to connect to WiFi and log the connection status to the LCD and serial monitor.
-//3.Add code to connect to the Adafruit MQTT broker and log the connection status to the LCD.
-//4.Add code to send temperature to the temperature feed every 2 seconds.
-//5.Add code to subscribe to compressor and fan feeds and control them via the Adafruit platform dashboard.
-
-
 #include <Wire.h>
 #include <OneWire.h>
 #include <LiquidCrystal_I2C.h>
@@ -21,14 +13,29 @@
 #define MAX_TEMPERATURE 12 // Maximum temperature set
 
 // WiFi credentials
-#define WIFI_SSID "your_wifi_ssid"
-#define WIFI_PASS "your_wifi_password"
+#define WIFI_SSID "claudewifi"
+#define WIFI_PASS "12341234"
 
 // Adafruit IO credentials
 #define AIO_SERVER "io.adafruit.com"
 #define AIO_SERVERPORT 1883
-#define AIO_USERNAME "your_aio_username"
-#define AIO_KEY "your_aio_key"
+#define AIO_USERNAME ""
+#define AIO_KEY ""
+
+// Custom character for degree symbol
+byte degreeSymbol[8] = {
+  0b00111,
+  0b00101,
+  0b00111,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000,
+  0b00000
+};
+
+
+
 
 // Create an ESP8266 WiFiClient class to connect to the MQTT server
 WiFiClient client;
@@ -54,7 +61,27 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
 
+  // Create custom degree symbol
+  lcd.createChar(0, degreeSymbol);
+
+  // Display company name
+  lcd.setCursor(0, 0);
+  lcd.print("Hills ELECTRONICS");
+  lcd.setCursor(0, 1);
+  lcd.print("S LTD");
+  delay(3000); // Wait for 3 seconds
+  
+  // Clear the display and show the next message
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("HVAC Trainer kit");
+  delay(3000); // Wait for another 3 seconds
+
+  // Clear the display before starting the loop
+  lcd.clear();
+  
   // Connect to WiFi
+  
   Serial.print("Connecting to WiFi...");
   lcd.setCursor(0, 0);
   lcd.print("Connecting to");
@@ -69,7 +96,8 @@ void setup() {
   Serial.println("WiFi connected!");
   lcd.setCursor(0, 0);
   lcd.print("WiFi connected!");
-
+  delay(2000); //
+  lcd.clear(); 
   // Setup MQTT subscriptions
   mqtt.subscribe(&compressor_feed);
   mqtt.subscribe(&fan_feed);
@@ -82,18 +110,24 @@ void loop() {
   sensors.requestTemperatures();
   float tempC = sensors.getTempCByIndex(0);
 
-  Serial.print(tempC);
+   Serial.print(tempC);
   lcd.setCursor(0, 0);
-  lcd.print("Temperature");
-  lcd.setCursor(0, 1);
-  lcd.print(tempC);
+  lcd.print("COIL Temp:");
+  lcd.setCursor(10, 0);
+  lcd.print(tempC,1);
+  lcd.write(byte(0));  // Display the custom degree symbol
+  lcd.print("C");
 
   if (tempC <= MIN_TEMPERATURE) {
     digitalWrite(COMPRESSOR_PIN, LOW);
     digitalWrite(FAN_PIN, HIGH);
+    lcd.setCursor(0, 1); // Set cursor to the beginning of the second line
+    lcd.print("Compressor: OFF ");
   } else {
     digitalWrite(COMPRESSOR_PIN, HIGH);
     digitalWrite(FAN_PIN, HIGH);
+    lcd.setCursor(0, 1); // Set cursor to the beginning of the second line
+    lcd.print("Compressor: ON");
   }
 
   Serial.print(tempC);
@@ -131,6 +165,8 @@ void connectToMQTT() {
   Serial.println("MQTT connected!");
   lcd.setCursor(0, 0);
   lcd.print("MQTT connected!");
+  delay(2000); //
+  lcd.clear(); 
 }
 
 // Handle messages from Adafruit IO
